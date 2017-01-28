@@ -1,4 +1,4 @@
-package com.khokhlov.common.error;
+package com.khokhlov.rest.response.common;
 
 /**
  * @author Khokhlov Pavel

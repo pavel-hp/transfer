@@ -1,6 +1,7 @@
 package com.khokhlov.common.error;
 
 import com.khokhlov.rest.response.common.EmptyResponseRo;
+import com.khokhlov.rest.response.common.ErrorCode;
 import com.khokhlov.rest.response.common.ErrorRo;
 import com.khokhlov.rest.response.common.FieldErrorRo;
 import org.slf4j.Logger;

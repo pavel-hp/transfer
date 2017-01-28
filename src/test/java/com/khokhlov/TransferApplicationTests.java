@@ -1,11 +1,11 @@
 package com.khokhlov;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.khokhlov.common.error.ErrorCode;
 import com.khokhlov.common.util.UrlConstants;
 import com.khokhlov.component.transfer.dao.api.AccountDao;
 import com.khokhlov.component.transfer.dao.impl.AccountDaoMemory;
 import com.khokhlov.rest.request.transfer.TransferRegisterRequestRo;
+import com.khokhlov.rest.response.common.ErrorCode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

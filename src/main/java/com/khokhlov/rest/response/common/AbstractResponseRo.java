@@ -1,6 +1,5 @@
 package com.khokhlov.rest.response.common;
 
-import com.khokhlov.common.error.ErrorCode;
 import com.khokhlov.rest.model.RestObject;
 
 /**

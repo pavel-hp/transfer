@@ -1,6 +1,7 @@
 package com.khokhlov.common.error;
 
 import com.khokhlov.rest.response.common.EmptyResponseRo;
+import com.khokhlov.rest.response.common.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
