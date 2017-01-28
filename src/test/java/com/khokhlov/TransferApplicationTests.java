@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -145,11 +146,37 @@ public class TransferApplicationTests {
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);
 		requestRo.setSourceId(2L);
-		requestRo.setMoney(new BigDecimal("1000.00"));
+		requestRo.setMoney(new BigDecimal("200"));
 		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(requestRo)))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testMoneyFormat() throws Exception {
+		prepareMoneyTest(new BigDecimal("0"), "MIN_MONEY");
+		prepareMoneyTest(new BigDecimal("-10"), "MIN_MONEY");
+		prepareMoneyTest(new BigDecimal("-1"), "MIN_MONEY");
+		prepareMoneyTest(new BigDecimal("0.00"), "MIN_MONEY");
+		prepareMoneyTest(new BigDecimal("0.034"), "BAD_FORMAT");
+		prepareMoneyTest(new BigDecimal("102112121220.00"), "BAD_FORMAT");
+
+	}
+
+	private ResultActions prepareMoneyTest(BigDecimal money, String code) throws Exception {
+		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
+		requestRo.setDestinationId(1L);
+		requestRo.setSourceId(2L);
+		requestRo.setMoney(money);
+		return mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestRo)))
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
+				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
+				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("money")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is(code)));
+
 	}
 
 }

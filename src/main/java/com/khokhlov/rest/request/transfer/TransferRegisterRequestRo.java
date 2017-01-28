@@ -2,6 +2,8 @@ package com.khokhlov.rest.request.transfer;
 
 import com.khokhlov.rest.model.RestObject;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -18,6 +20,8 @@ public class TransferRegisterRequestRo implements RestObject {
 	private Long destinationId;
 
 	@NotNull
+	@Digits(integer = 10, fraction = 2, message = "BAD_FORMAT")
+	@DecimalMin(value = "0.01", message = "MIN_MONEY")
 	private BigDecimal money;
 
 	public Long getSourceId() {

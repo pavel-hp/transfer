@@ -40,7 +40,6 @@ public class TransferManagerImpl implements TransferManager {
 	public synchronized TransferRegisterResponse transfer(TransferRegisterRequestRo requestRo) {
 		TransferRegisterResponse response = new TransferRegisterResponse();
 		BigDecimal userMoney = requestRo.getMoney();
-		checkAmount(userMoney, response);
 		Long destinationId = requestRo.getDestinationId();
 		Long sourceId = requestRo.getSourceId();
 		if (destinationId.equals(sourceId)) {
@@ -72,14 +71,6 @@ public class TransferManagerImpl implements TransferManager {
 		}
 
 		return response;
-	}
-
-	private void checkAmount(BigDecimal userAmount, TransferRegisterResponse response) {
-		int res = BigDecimal.ZERO.compareTo(userAmount);
-		if (res != -1) {
-			ErrorRo errorRo = response.makeValidationError();
-			errorRo.addErrorField("money", "BAD_FORMAT", "Incorrect field");
-		}
 	}
 
 	private AccountInfoRo checkAccount(Long sourceId, String fieldName, TransferRegisterResponse response) {
