@@ -1,12 +1,15 @@
 package com.khokhlov.component.transfer.controller;
 
-import com.khokhlov.common.controller.UrlConstants;
+import com.khokhlov.common.util.UrlConstants;
 import com.khokhlov.component.transfer.manager.api.TransferManager;
+import com.khokhlov.rest.request.transfer.TransferRegisterRequestRo;
 import com.khokhlov.rest.response.transfer.TransferPrepareResponse;
+import com.khokhlov.rest.response.transfer.TransferRegisterResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import static com.khokhlov.common.util.ControllerUtil.wrapResponse;
 
 /**
  * @author Khokhlov Pavel
@@ -22,5 +25,13 @@ public class TransferController {
 	public TransferPrepareResponse prepareTransfer() {
 		return manager.prepare();
 	}
+
+	@RequestMapping(path = UrlConstants.REGISTER)
+	@PostMapping
+	public ResponseEntity<TransferRegisterResponse> registerTransfer(@RequestBody TransferRegisterRequestRo requestRo) {
+		TransferRegisterResponse response = manager.transfer(requestRo);
+		return wrapResponse(response);
+	}
+
 
 }

@@ -1,4 +1,4 @@
-package com.khokhlov.common.controller;
+package com.khokhlov.common.util;
 
 /**
  * @author Khokhlov Pavel
@@ -6,5 +6,6 @@ package com.khokhlov.common.controller;
 public interface UrlConstants {
 	String TRANSFER = "/transfer";
 	String PREPARE = TRANSFER + "/prepare";
+	String REGISTER = TRANSFER + "/register";
 
 }

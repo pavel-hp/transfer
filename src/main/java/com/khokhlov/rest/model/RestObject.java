@@ -1,4 +1,4 @@
-package com.khokhlov.rest;
+package com.khokhlov.rest.model;
 
 import java.io.Serializable;
 

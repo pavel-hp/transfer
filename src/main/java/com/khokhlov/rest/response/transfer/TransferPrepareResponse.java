@@ -1,6 +1,6 @@
 package com.khokhlov.rest.response.transfer;
 
-import com.khokhlov.rest.response.account.AccountInfoRo;
+import com.khokhlov.rest.model.account.AccountInfoRo;
 import com.khokhlov.rest.response.common.AbstractResponseRo;
 
 import java.util.ArrayList;

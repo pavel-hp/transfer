@@ -1,6 +1,6 @@
 package com.khokhlov.rest.response.common;
 
-import com.khokhlov.rest.RestObject;
+import com.khokhlov.rest.model.RestObject;
 
 /**
  * @author Khokhlov Pavel
@@ -16,5 +16,12 @@ public abstract class AbstractResponseRo implements RestObject {
 
 	public void setError(ErrorRo error) {
 		this.error = error;
+	}
+
+	public boolean hasError() {
+		if (error != null) {
+			return true;
+		}
+		return false;
 	}
 }

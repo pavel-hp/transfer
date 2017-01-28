@@ -1,6 +1,6 @@
 package com.khokhlov.rest.response.common;
 
-import com.khokhlov.rest.RestObject;
+import com.khokhlov.rest.model.RestObject;
 
 import java.util.List;
 

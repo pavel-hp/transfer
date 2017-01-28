@@ -1,6 +1,6 @@
-package com.khokhlov.rest.response.money;
+package com.khokhlov.rest.model.money;
 
-import com.khokhlov.rest.RestObject;
+import com.khokhlov.rest.model.RestObject;
 
 /**
  * @author Khokhlov Pavel
