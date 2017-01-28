@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -59,6 +60,7 @@ public class TransferApplicationTests {
 				.andExpect(status().is(HttpServletResponse.SC_INTERNAL_SERVER_ERROR))
 				.andExpect(jsonPath("$.error.code", is(ErrorCode.REQUEST_PARAMETER_CONFLICT.name())));
 
+
 		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(status().is(HttpServletResponse.SC_INTERNAL_SERVER_ERROR))
@@ -71,13 +73,23 @@ public class TransferApplicationTests {
 				.andExpect(status().is(HttpServletResponse.SC_INTERNAL_SERVER_ERROR))
 				.andExpect(jsonPath("$.error.code", is(ErrorCode.REQUEST_PARAMETER_CONFLICT.name())));
 
+		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new TransferRegisterRequestRo())))
+				.andExpect(status().is(HttpServletResponse.SC_BAD_REQUEST))
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.REQUEST_PARAMETER_CONFLICT.name())));
+
 	}
 
 	@Test
 	public void register() throws Exception {
+		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
+		requestRo.setDestinationId(1L);
+		requestRo.setSourceId(2L);
+		requestRo.setMoney(new BigDecimal("200.23"));
 		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(new TransferRegisterRequestRo())))
+				.content(objectMapper.writeValueAsString(requestRo)))
 				.andExpect(status().isOk());
 	}
 

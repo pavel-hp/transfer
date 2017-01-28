@@ -1,8 +1,9 @@
 package com.khokhlov.rest.response.common;
 
 import com.khokhlov.rest.model.RestObject;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.Map;
+import javax.validation.ConstraintViolation;
 
 /**
  * @author Khokhlov Pavel
@@ -14,7 +15,24 @@ public class FieldErrorRo implements RestObject {
 	private String fieldCode;
 	private String errorCode;
 	private String message;
-	private Map<String, Object> parameters;
+
+	public FieldErrorRo() {
+	}
+
+	private FieldErrorRo(String fieldCode, String errorCode, String message) {
+		this();
+		this.fieldCode = fieldCode;
+		this.errorCode = errorCode;
+		this.message = message;
+	}
+
+	public static FieldErrorRo of(ConstraintViolation<?> constraintViolation) {
+		String field = StringUtils.substringAfterLast(
+				constraintViolation.getPropertyPath().toString(), ".");
+		return new FieldErrorRo(field,
+				constraintViolation.getMessageTemplate(),
+				constraintViolation.getMessage());
+	}
 
 	public String getFieldCode() {
 		return fieldCode;
@@ -40,11 +58,4 @@ public class FieldErrorRo implements RestObject {
 		this.message = message;
 	}
 
-	public Map<String, Object> getParameters() {
-		return parameters;
-	}
-
-	public void setParameters(Map<String, Object> parameters) {
-		this.parameters = parameters;
-	}
 }

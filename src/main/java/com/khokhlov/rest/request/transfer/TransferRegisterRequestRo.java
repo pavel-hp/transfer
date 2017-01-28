@@ -2,6 +2,7 @@ package com.khokhlov.rest.request.transfer;
 
 import com.khokhlov.rest.model.RestObject;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -10,8 +11,13 @@ import java.math.BigDecimal;
 public class TransferRegisterRequestRo implements RestObject {
 	private static final long serialVersionUID = -2731857406805352102L;
 
+	@NotNull
 	private Long sourceId;
+
+	@NotNull
 	private Long destinationId;
+
+	@NotNull
 	private BigDecimal money;
 
 	public Long getSourceId() {

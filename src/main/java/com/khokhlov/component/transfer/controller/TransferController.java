@@ -29,8 +29,7 @@ public class TransferController {
 	@RequestMapping(path = UrlConstants.REGISTER)
 	@PostMapping
 	public ResponseEntity<TransferRegisterResponse> registerTransfer(@RequestBody TransferRegisterRequestRo requestRo) {
-		TransferRegisterResponse response = manager.transfer(requestRo);
-		return wrapResponse(response);
+		return wrapResponse(manager.transfer(requestRo));
 	}
 
 

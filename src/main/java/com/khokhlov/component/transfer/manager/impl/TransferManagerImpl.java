@@ -7,11 +7,13 @@ import com.khokhlov.rest.response.transfer.TransferPrepareResponse;
 import com.khokhlov.rest.response.transfer.TransferRegisterResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * @author Khokhlov Pavel
  */
 @Component
+@Validated
 public class TransferManagerImpl implements TransferManager {
 
 	@Autowired
