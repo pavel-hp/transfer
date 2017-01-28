@@ -9,4 +9,6 @@ import java.util.List;
  */
 public interface AccountDao {
 	List<AccountInfoRo> getUserAccounts();
+
+	AccountInfoRo findById(Long id);
 }

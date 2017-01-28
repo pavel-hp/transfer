@@ -14,7 +14,7 @@ import java.util.List;
  * @author Khokhlov Pavel
  */
 @Repository
-public class AccountDaoImpl implements AccountDao {
+public class AccountDaoMemory implements AccountDao {
 
 	enum Currency {
 		RUB("\u20BD"), EUR("€"), USD("$");
@@ -30,12 +30,35 @@ public class AccountDaoImpl implements AccountDao {
 		return getDummyData();
 	}
 
+	@Override
+	public AccountInfoRo findById(Long id) {
+		return getDummyData().stream()
+				.filter(account -> account.getId().equals(id))
+				.findFirst().orElse(null);
+	}
+
+	public static AccountInfoRo getRurSaving() {
+		return getSourceAccount(1L, "Накопительный", "40817810555555555111", Currency.RUB);
+	}
+
+	public static AccountInfoRo getRurExpress() {
+		return getSourceAccount(2L, "Накопительный", "40817810555555555111", Currency.RUB);
+	}
+
+	public static AccountInfoRo getUsd() {
+		return getSourceAccount(3L, "Счета для USD открытого вклада", "40817840555555555222", Currency.USD);
+	}
+
+	public static AccountInfoRo getEur() {
+		return getSourceAccount(4L, "Счета для EUR открытого вклада", "40817840555555555333", Currency.EUR);
+	}
+
 	public static List<AccountInfoRo> getDummyData() {
 		List<AccountInfoRo> accounts = new ArrayList<>();
-		accounts.add(getSourceAccount(1L, "Накопительный", "40817810555555555111", Currency.RUB));
-		accounts.add(getSourceAccount(2L, "Экспресс", "40817840555555555444", Currency.RUB));
-		accounts.add(getSourceAccount(3L, "Счета для USD открытого вклада", "40817840555555555222", Currency.USD));
-		accounts.add(getSourceAccount(4L, "Счета для EUR открытого вклада", "40817840555555555333", Currency.EUR));
+		accounts.add(getRurSaving());
+		accounts.add(getRurExpress());
+		accounts.add(getUsd());
+		accounts.add(getEur());
 		return accounts;
 	}
 

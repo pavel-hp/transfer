@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khokhlov.common.error.ErrorCode;
 import com.khokhlov.common.util.UrlConstants;
 import com.khokhlov.component.transfer.dao.api.AccountDao;
-import com.khokhlov.component.transfer.dao.impl.AccountDaoImpl;
+import com.khokhlov.component.transfer.dao.impl.AccountDaoMemory;
 import com.khokhlov.rest.request.transfer.TransferRegisterRequestRo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +43,7 @@ public class TransferApplicationTests {
 	@Test
 	public void checkPrepare() throws Exception {
 
-		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+		given(accountDao.getUserAccounts()).willReturn(AccountDaoMemory.getDummyData());
 
 		mvc.perform(get(UrlConstants.PREPARE).accept(MediaType.APPLICATION_JSON))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -91,12 +91,16 @@ public class TransferApplicationTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(requestRo)))
 				.andExpect(status().is(HttpServletResponse.SC_BAD_REQUEST))
-				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())));
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
+				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
+				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("sourceId")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("THE_SAME")));
 	}
 
 	@Test
 	public void registerFailedConversationForbidden() throws Exception {
-		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+		given(accountDao.findById(1L)).willReturn(AccountDaoMemory.getRurSaving());
+		given(accountDao.findById(3L)).willReturn(AccountDaoMemory.getUsd());
 
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);
@@ -115,7 +119,8 @@ public class TransferApplicationTests {
 
 	@Test
 	public void registerFailedInsufficientFunds() throws Exception {
-		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+		given(accountDao.findById(1L)).willReturn(AccountDaoMemory.getRurSaving());
+		given(accountDao.findById(2L)).willReturn(AccountDaoMemory.getRurExpress());
 
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);
@@ -134,7 +139,8 @@ public class TransferApplicationTests {
 	@Test
 	public void registerSuccess() throws Exception {
 
-		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+		given(accountDao.findById(1L)).willReturn(AccountDaoMemory.getRurSaving());
+		given(accountDao.findById(2L)).willReturn(AccountDaoMemory.getRurExpress());
 
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);

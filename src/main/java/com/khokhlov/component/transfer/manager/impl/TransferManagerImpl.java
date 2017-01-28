@@ -1,6 +1,7 @@
 package com.khokhlov.component.transfer.manager.impl;
 
 import com.khokhlov.component.transfer.dao.api.AccountDao;
+import com.khokhlov.component.transfer.dao.api.TransferDao;
 import com.khokhlov.component.transfer.manager.api.TransferManager;
 import com.khokhlov.rest.model.account.AccountInfoRo;
 import com.khokhlov.rest.model.money.MoneyRo;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * @author Khokhlov Pavel
@@ -23,6 +24,9 @@ public class TransferManagerImpl implements TransferManager {
 
 	@Autowired
 	private AccountDao accountDao;
+
+	@Autowired
+	private TransferDao transferDao;
 
 	@Override
 	public TransferPrepareResponse prepare() {
@@ -38,7 +42,8 @@ public class TransferManagerImpl implements TransferManager {
 		Long destinationId = requestRo.getDestinationId();
 		Long sourceId = requestRo.getSourceId();
 		if (destinationId.equals(sourceId)) {
-			response.makeValidationError("The same accounts");
+			ErrorRo errorRo = response.makeValidationError();
+			errorRo.addErrorField("sourceId", "THE_SAME", "The same accounts");
 			return response;
 		}
 		AccountInfoRo source = checkAccount(sourceId, "sourceId", response);
@@ -47,25 +52,24 @@ public class TransferManagerImpl implements TransferManager {
 			return response;
 		}
 		MoneyRo sourceMoney = source.getAvailableAmount();
+		BigDecimal userMoney = requestRo.getMoney();
 		MoneyRo destinationMoney = destination.getAvailableAmount();
 		if (!sourceMoney.getCurrency().getCode().equals(destinationMoney.getCurrency().getCode())) {
 			ErrorRo errorRo = response.makeValidationError();
 			errorRo.addErrorField("sourceId", "CONVERSATION_FORBIDDEN", "Conversation not allowed");
 		}
-		int result = sourceMoney.getAmount().compareTo(requestRo.getMoney());
+		int result = sourceMoney.getAmount().compareTo(userMoney);
 		if (result == -1) {
 			ErrorRo errorRo = response.makeValidationError();
 			errorRo.addErrorField("sourceId", "NO_MONEY", "Insufficient funds");
 		}
+		transferDao.transfer(source, destination, userMoney);
 
 		return response;
 	}
 
 	private AccountInfoRo checkAccount(Long sourceId, String fieldName, TransferRegisterResponse response) {
-		List<AccountInfoRo> accounts = accountDao.getUserAccounts();
-		AccountInfoRo sourceAccount = accounts.stream()
-				.filter(account -> account.getId().equals(sourceId))
-				.findFirst().orElse(null);
+		AccountInfoRo sourceAccount = accountDao.findById(sourceId);
 		if (sourceAccount == null) {
 			ErrorRo errorRo = response.makeValidationError();
 			errorRo.addErrorField(fieldName, "NOT_FOUND", "Account not found");
