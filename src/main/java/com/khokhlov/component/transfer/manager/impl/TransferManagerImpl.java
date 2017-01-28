@@ -37,8 +37,10 @@ public class TransferManagerImpl implements TransferManager {
 	}
 
 	@Override
-	public TransferRegisterResponse transfer(TransferRegisterRequestRo requestRo) {
+	public synchronized TransferRegisterResponse transfer(TransferRegisterRequestRo requestRo) {
 		TransferRegisterResponse response = new TransferRegisterResponse();
+		BigDecimal userMoney = requestRo.getMoney();
+		checkAmount(userMoney, response);
 		Long destinationId = requestRo.getDestinationId();
 		Long sourceId = requestRo.getSourceId();
 		if (destinationId.equals(sourceId)) {
@@ -52,7 +54,7 @@ public class TransferManagerImpl implements TransferManager {
 			return response;
 		}
 		MoneyRo sourceMoney = source.getAvailableAmount();
-		BigDecimal userMoney = requestRo.getMoney();
+
 		MoneyRo destinationMoney = destination.getAvailableAmount();
 		if (!sourceMoney.getCurrency().getCode().equals(destinationMoney.getCurrency().getCode())) {
 			ErrorRo errorRo = response.makeValidationError();
@@ -63,9 +65,21 @@ public class TransferManagerImpl implements TransferManager {
 			ErrorRo errorRo = response.makeValidationError();
 			errorRo.addErrorField("sourceId", "NO_MONEY", "Insufficient funds");
 		}
-		transferDao.transfer(source, destination, userMoney);
+
+
+		if (!response.hasError()) {
+			transferDao.transfer(source, destination, userMoney);
+		}
 
 		return response;
+	}
+
+	private void checkAmount(BigDecimal userAmount, TransferRegisterResponse response) {
+		int res = BigDecimal.ZERO.compareTo(userAmount);
+		if (res != -1) {
+			ErrorRo errorRo = response.makeValidationError();
+			errorRo.addErrorField("money", "BAD_FORMAT", "Incorrect field");
+		}
 	}
 
 	private AccountInfoRo checkAccount(Long sourceId, String fieldName, TransferRegisterResponse response) {

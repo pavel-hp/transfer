@@ -8,6 +8,8 @@ import java.math.BigDecimal;
  * @author Khokhlov Pavel
  */
 public class MoneyRo implements RestObject {
+	private static final long serialVersionUID = 48996516982311687L;
+
 	private BigDecimal amount;
 	private CurrencyRo currency;
 

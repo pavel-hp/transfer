@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,6 +16,15 @@ import java.util.List;
  */
 @Repository
 public class AccountDaoMemory implements AccountDao {
+
+	private static List<AccountInfoRo> accounts = new ArrayList<>();
+
+	static {
+		accounts.add(getRurSaving());
+		accounts.add(getRurExpress());
+		accounts.add(getUsd());
+		accounts.add(getEur());
+	}
 
 	enum Currency {
 		RUB("\u20BD"), EUR("€"), USD("$");
@@ -42,7 +52,7 @@ public class AccountDaoMemory implements AccountDao {
 	}
 
 	public static AccountInfoRo getRurExpress() {
-		return getSourceAccount(2L, "Накопительный", "40817810555555555111", Currency.RUB);
+		return getSourceAccount(2L, "Экспресс", "40817840555555555444", Currency.RUB);
 	}
 
 	public static AccountInfoRo getUsd() {
@@ -54,12 +64,7 @@ public class AccountDaoMemory implements AccountDao {
 	}
 
 	public static List<AccountInfoRo> getDummyData() {
-		List<AccountInfoRo> accounts = new ArrayList<>();
-		accounts.add(getRurSaving());
-		accounts.add(getRurExpress());
-		accounts.add(getUsd());
-		accounts.add(getEur());
-		return accounts;
+		return Collections.unmodifiableList(accounts);
 	}
 
 	static AccountInfoRo getSourceAccount(Long id, String name, String account, Currency currency) {
