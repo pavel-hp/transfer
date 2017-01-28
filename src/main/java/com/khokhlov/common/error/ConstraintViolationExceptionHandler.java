@@ -41,7 +41,7 @@ public class ConstraintViolationExceptionHandler implements HandlerExceptionReso
 		if (e instanceof ValidationException) {
 			// we have to know real reason of exception in logs
 			logger.error("ValidationException: ", e);
-			EmptyResponseRo errorResponse = makeError(ErrorCode.REQUEST_PARAMETER_CONFLICT);
+			EmptyResponseRo errorResponse = makeError(ErrorCode.VALIDATION);
 			if (e instanceof ConstraintViolationException) {
 				ConstraintViolationException constrainedEx = (ConstraintViolationException) e;
 				Set<ConstraintViolation<?>> constraintViolations = constrainedEx.getConstraintViolations();
@@ -53,10 +53,9 @@ public class ConstraintViolationExceptionHandler implements HandlerExceptionReso
 		return null;
 	}
 
-	private void fillErrors(
-			Set<ConstraintViolation<?>> constraintViolations, ErrorRo errorRo) {
+	private void fillErrors(Set<ConstraintViolation<?>> constraintViolations, ErrorRo errorRo) {
 		List<FieldErrorRo> fieldErrorRoList = constraintViolations.stream()
-				.map(FieldErrorRo::of).collect(Collectors.toList());
+				.map(FieldErrorRo::translate).collect(Collectors.toList());
 		errorRo.setFieldErrors(fieldErrorRoList);
 	}
 

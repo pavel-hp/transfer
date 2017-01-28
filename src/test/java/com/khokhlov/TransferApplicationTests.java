@@ -41,7 +41,7 @@ public class TransferApplicationTests {
 	private ObjectMapper objectMapper;
 
 	@Test
-	public void contextLoads() throws Exception {
+	public void checkPrepare() throws Exception {
 
 		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
 
@@ -53,7 +53,7 @@ public class TransferApplicationTests {
 	}
 
 	@Test
-	public void errorHandle() throws Exception {
+	public void checkErrorHandle() throws Exception {
 		// check error handle
 		mvc.perform(post(UrlConstants.REGISTER))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -77,16 +77,69 @@ public class TransferApplicationTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(new TransferRegisterRequestRo())))
 				.andExpect(status().is(HttpServletResponse.SC_BAD_REQUEST))
-				.andExpect(jsonPath("$.error.code", is(ErrorCode.REQUEST_PARAMETER_CONFLICT.name())));
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())));
 
 	}
 
 	@Test
-	public void register() throws Exception {
+	public void registerFailedTheSameAccounts() throws Exception {
+		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
+		requestRo.setDestinationId(1L);
+		requestRo.setSourceId(1L);
+		requestRo.setMoney(new BigDecimal("200.23"));
+		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestRo)))
+				.andExpect(status().is(HttpServletResponse.SC_BAD_REQUEST))
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())));
+	}
+
+	@Test
+	public void registerFailedConversationForbidden() throws Exception {
+		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+
+		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
+		requestRo.setDestinationId(1L);
+		requestRo.setSourceId(3L);
+		requestRo.setMoney(new BigDecimal("200.23"));
+		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestRo)))
+				.andExpect(status().is(HttpServletResponse.SC_BAD_REQUEST))
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
+				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
+				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("sourceId")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("CONVERSATION_FORBIDDEN")));
+
+	}
+
+	@Test
+	public void registerFailedInsufficientFunds() throws Exception {
+		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);
 		requestRo.setSourceId(2L);
-		requestRo.setMoney(new BigDecimal("200.23"));
+		requestRo.setMoney(new BigDecimal("2000.1"));
+		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestRo)))
+				.andExpect(status().is(HttpServletResponse.SC_BAD_REQUEST))
+				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
+				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
+				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("sourceId")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("NO_MONEY")));
+	}
+
+	@Test
+	public void registerSuccess() throws Exception {
+
+		given(accountDao.getUserAccounts()).willReturn(AccountDaoImpl.getDummyData());
+
+		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
+		requestRo.setDestinationId(1L);
+		requestRo.setSourceId(2L);
+		requestRo.setMoney(new BigDecimal("1000.00"));
 		mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(requestRo)))

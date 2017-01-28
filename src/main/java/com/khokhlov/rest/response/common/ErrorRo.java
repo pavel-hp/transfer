@@ -2,6 +2,7 @@ package com.khokhlov.rest.response.common;
 
 import com.khokhlov.rest.model.RestObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,5 +38,12 @@ public class ErrorRo implements RestObject {
 
 	public void setFieldErrors(List<FieldErrorRo> fieldErrors) {
 		this.fieldErrors = fieldErrors;
+	}
+
+	public void addErrorField(String field, String code, String message) {
+		if (fieldErrors == null) {
+			fieldErrors = new ArrayList<>();
+		}
+		fieldErrors.add(new FieldErrorRo(field, code, message));
 	}
 }

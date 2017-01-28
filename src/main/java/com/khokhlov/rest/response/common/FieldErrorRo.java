@@ -19,14 +19,14 @@ public class FieldErrorRo implements RestObject {
 	public FieldErrorRo() {
 	}
 
-	private FieldErrorRo(String fieldCode, String errorCode, String message) {
+	public FieldErrorRo(String fieldCode, String errorCode, String message) {
 		this();
 		this.fieldCode = fieldCode;
 		this.errorCode = errorCode;
 		this.message = message;
 	}
 
-	public static FieldErrorRo of(ConstraintViolation<?> constraintViolation) {
+	public static FieldErrorRo translate(ConstraintViolation<?> constraintViolation) {
 		String field = StringUtils.substringAfterLast(
 				constraintViolation.getPropertyPath().toString(), ".");
 		return new FieldErrorRo(field,

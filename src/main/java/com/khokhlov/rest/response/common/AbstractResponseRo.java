@@ -1,5 +1,6 @@
 package com.khokhlov.rest.response.common;
 
+import com.khokhlov.common.error.ErrorCode;
 import com.khokhlov.rest.model.RestObject;
 
 /**
@@ -21,4 +22,22 @@ public abstract class AbstractResponseRo implements RestObject {
 	public boolean hasError() {
 		return error != null;
 	}
+
+	public ErrorRo makeValidationError(String message) {
+		return makeError(ErrorCode.VALIDATION.name(), message);
+	}
+
+	public ErrorRo makeValidationError() {
+		return makeValidationError(null);
+	}
+
+	private ErrorRo makeError(String code, String message) {
+		if (!hasError()) {
+			error = new ErrorRo();
+		}
+		error.setCode(code);
+		error.setMessage(message);
+		return error;
+	}
+
 }
