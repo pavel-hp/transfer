@@ -155,20 +155,20 @@ public class TransferApplicationTests {
 
 	@Test
 	public void testMoneyFormat() throws Exception {
-		prepareMoneyTest(new BigDecimal("0"), "MIN_MONEY");
-		prepareMoneyTest(new BigDecimal("-10"), "MIN_MONEY");
-		prepareMoneyTest(new BigDecimal("-1"), "MIN_MONEY");
-		prepareMoneyTest(new BigDecimal("0.00"), "MIN_MONEY");
-		prepareMoneyTest(new BigDecimal("0.034"), "BAD_FORMAT");
-		prepareMoneyTest(new BigDecimal("102112121220.00"), "BAD_FORMAT");
+		prepareMoneyTest("0", "MIN_MONEY");
+		prepareMoneyTest("-10", "MIN_MONEY");
+		prepareMoneyTest("-1", "MIN_MONEY");
+		prepareMoneyTest("0.00", "MIN_MONEY");
+		prepareMoneyTest("0.034", "BAD_FORMAT");
+		prepareMoneyTest("102112121220.00", "BAD_FORMAT");
 
 	}
 
-	private ResultActions prepareMoneyTest(BigDecimal money, String code) throws Exception {
+	private ResultActions prepareMoneyTest(String money, String code) throws Exception {
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);
 		requestRo.setSourceId(2L);
-		requestRo.setMoney(money);
+		requestRo.setMoney(new BigDecimal(money));
 		return mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(requestRo)))
