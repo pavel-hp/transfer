@@ -4,9 +4,12 @@ import com.khokhlov.rest.response.common.EmptyResponseRo;
 import com.khokhlov.rest.response.common.ErrorCode;
 import com.khokhlov.rest.response.common.ErrorRo;
 import com.khokhlov.rest.response.common.FieldErrorRo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -32,10 +35,16 @@ public class ConstraintViolationExceptionHandler implements HandlerExceptionReso
 	@Autowired
 	private ErrorWriter writer;
 
+	@Autowired
+	private MessageSource messageSource;
+
+	private static final String BUNDLE_PATH = "message.field.";
+
 	@Override
 	public int getOrder() {
 		return Order.CONSTRAINT;
 	}
+
 
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) {
@@ -54,10 +63,20 @@ public class ConstraintViolationExceptionHandler implements HandlerExceptionReso
 		return null;
 	}
 
+
 	private void fillErrors(Set<ConstraintViolation<?>> constraintViolations, ErrorRo errorRo) {
 		List<FieldErrorRo> fieldErrorRoList = constraintViolations.stream()
-				.map(FieldErrorRo::translate).collect(Collectors.toList());
+				.map(ConstraintViolationExceptionHandler.this::translate).collect(Collectors.toList());
 		errorRo.setFieldErrors(fieldErrorRoList);
+	}
+
+	private FieldErrorRo translate(ConstraintViolation<?> constraintViolation) {
+		String field = StringUtils.substringAfterLast(
+				constraintViolation.getPropertyPath().toString(), ".");
+		String messageCode = constraintViolation.getMessageTemplate();
+		String message = messageSource.getMessage(BUNDLE_PATH + messageCode, null, LocaleContextHolder.getLocale());
+
+		return new FieldErrorRo(field, messageCode, message);
 	}
 
 	static EmptyResponseRo makeError(ErrorCode errorCode) {

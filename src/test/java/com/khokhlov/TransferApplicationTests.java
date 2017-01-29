@@ -6,6 +6,7 @@ import com.khokhlov.component.transfer.dao.api.AccountDao;
 import com.khokhlov.component.transfer.dao.impl.AccountDaoMemory;
 import com.khokhlov.rest.request.transfer.TransferRegisterRequestRo;
 import com.khokhlov.rest.response.common.ErrorCode;
+import com.khokhlov.rest.response.common.FieldErrorCode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,8 @@ public class TransferApplicationTests {
 				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
 				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
 				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("sourceId")))
-				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("THE_SAME")));
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("THE_SAME")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].message", is("The same accounts")));
 	}
 
 	@Test
@@ -114,7 +116,8 @@ public class TransferApplicationTests {
 				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
 				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
 				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("sourceId")))
-				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("CONVERSATION_FORBIDDEN")));
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("CONVERSATION_FORBIDDEN")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].message", is("Conversation not allowed")));
 
 	}
 
@@ -134,7 +137,8 @@ public class TransferApplicationTests {
 				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
 				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
 				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("sourceId")))
-				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("NO_MONEY")));
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is("NO_MONEY")))
+				.andExpect(jsonPath("$.error.fieldErrors[0].message", is("Insufficient funds")));
 	}
 
 	@Test
@@ -155,12 +159,13 @@ public class TransferApplicationTests {
 
 	@Test
 	public void testMoneyFormat() throws Exception {
-		prepareMoneyTest("0", "MIN_MONEY");
-		prepareMoneyTest("-10", "MIN_MONEY");
-		prepareMoneyTest("-1", "MIN_MONEY");
-		prepareMoneyTest("0.00", "MIN_MONEY");
-		prepareMoneyTest("0.034", "BAD_FORMAT");
-		prepareMoneyTest("102112121220.00", "BAD_FORMAT");
+		prepareMoneyTest("0", FieldErrorCode.MIN_MONEY);
+		prepareMoneyTest(null, FieldErrorCode.NOT_NULL);
+		prepareMoneyTest("-10", FieldErrorCode.MIN_MONEY);
+		prepareMoneyTest("-1", FieldErrorCode.MIN_MONEY);
+		prepareMoneyTest("0.00", FieldErrorCode.MIN_MONEY);
+		prepareMoneyTest("0.034", FieldErrorCode.BAD_FORMAT);
+		prepareMoneyTest("102112121220.00", FieldErrorCode.BAD_FORMAT);
 
 	}
 
@@ -168,15 +173,36 @@ public class TransferApplicationTests {
 		TransferRegisterRequestRo requestRo = new TransferRegisterRequestRo();
 		requestRo.setDestinationId(1L);
 		requestRo.setSourceId(2L);
-		requestRo.setMoney(new BigDecimal(money));
+		if (money != null) {
+			requestRo.setMoney(new BigDecimal(money));
+		}
+		String expectedMessage = getMessageByFieldErrorCode(code);
 		return mvc.perform(post(UrlConstants.REGISTER).accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(requestRo)))
 				.andExpect(jsonPath("$.error.code", is(ErrorCode.VALIDATION.name())))
 				.andExpect(jsonPath("$.error.fieldErrors", hasSize(1)))
 				.andExpect(jsonPath("$.error.fieldErrors[0].fieldCode", is("money")))
-				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is(code)));
+				.andExpect(jsonPath("$.error.fieldErrors[0].errorCode", is(code)))
+				.andExpect(jsonPath("$.error.fieldErrors[0].message", is(expectedMessage)));
+	}
 
+	private String getMessageByFieldErrorCode(String code) {
+		String localizedMessage;
+		switch (code) {
+			case FieldErrorCode.MIN_MONEY:
+				localizedMessage = "Minimum amount exceeded";
+				break;
+			case FieldErrorCode.BAD_FORMAT:
+				localizedMessage = "Unsupported format";
+				break;
+			case FieldErrorCode.NOT_NULL:
+				localizedMessage = "This field cannot be empty";
+				break;
+			default:
+				throw new RuntimeException();
+		}
+		return localizedMessage;
 	}
 
 }

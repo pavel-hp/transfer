@@ -10,6 +10,8 @@ import com.khokhlov.rest.response.common.ErrorRo;
 import com.khokhlov.rest.response.transfer.TransferPrepareResponse;
 import com.khokhlov.rest.response.transfer.TransferRegisterResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
@@ -28,6 +30,9 @@ public class TransferManagerImpl implements TransferManager {
 	@Autowired
 	private TransferDao transferDao;
 
+	@Autowired
+	private MessageSource messageSource;
+
 	@Override
 	public TransferPrepareResponse prepare() {
 		TransferPrepareResponse response = new TransferPrepareResponse();
@@ -43,8 +48,7 @@ public class TransferManagerImpl implements TransferManager {
 		Long destinationId = requestRo.getDestinationId();
 		Long sourceId = requestRo.getSourceId();
 		if (destinationId.equals(sourceId)) {
-			ErrorRo errorRo = response.makeValidationError();
-			errorRo.addErrorField("sourceId", "THE_SAME", "The same accounts");
+			makeValidationError("sourceId", "THE_SAME", response);
 			return response;
 		}
 		AccountInfoRo source = checkAccount(sourceId, "sourceId", response);
@@ -56,13 +60,11 @@ public class TransferManagerImpl implements TransferManager {
 
 		MoneyRo destinationMoney = destination.getAvailableAmount();
 		if (!sourceMoney.getCurrency().getCode().equals(destinationMoney.getCurrency().getCode())) {
-			ErrorRo errorRo = response.makeValidationError();
-			errorRo.addErrorField("sourceId", "CONVERSATION_FORBIDDEN", "Conversation not allowed");
+			makeValidationError("sourceId", "CONVERSATION_FORBIDDEN", response);
 		}
 		int result = sourceMoney.getAmount().compareTo(userMoney);
 		if (result == -1) {
-			ErrorRo errorRo = response.makeValidationError();
-			errorRo.addErrorField("sourceId", "NO_MONEY", "Insufficient funds");
+			makeValidationError("sourceId", "NO_MONEY", response);
 		}
 
 
@@ -74,12 +76,17 @@ public class TransferManagerImpl implements TransferManager {
 	}
 
 	private AccountInfoRo checkAccount(Long sourceId, String fieldName, TransferRegisterResponse response) {
-		AccountInfoRo sourceAccount = accountDao.findById(sourceId);
-		if (sourceAccount == null) {
-			ErrorRo errorRo = response.makeValidationError();
-			errorRo.addErrorField(fieldName, "NOT_FOUND", "Account not found");
+		AccountInfoRo account = accountDao.findById(sourceId);
+		if (account == null) {
+			makeValidationError(fieldName, "NOT_FOUND", response);
 		}
-		return sourceAccount;
+		return account;
+	}
+
+	private void makeValidationError(String field, String errorCode, TransferRegisterResponse response) {
+		ErrorRo errorRo = response.makeValidationError();
+		String message = messageSource.getMessage("transfer.register." + errorCode, null, LocaleContextHolder.getLocale());
+		errorRo.addErrorField(field, errorCode, message);
 	}
 
 }

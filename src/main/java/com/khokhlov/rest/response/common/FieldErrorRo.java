@@ -1,9 +1,6 @@
 package com.khokhlov.rest.response.common;
 
 import com.khokhlov.rest.model.RestObject;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.ConstraintViolation;
 
 /**
  * @author Khokhlov Pavel
@@ -24,14 +21,6 @@ public class FieldErrorRo implements RestObject {
 		this.fieldCode = fieldCode;
 		this.errorCode = errorCode;
 		this.message = message;
-	}
-
-	public static FieldErrorRo translate(ConstraintViolation<?> constraintViolation) {
-		String field = StringUtils.substringAfterLast(
-				constraintViolation.getPropertyPath().toString(), ".");
-		return new FieldErrorRo(field,
-				constraintViolation.getMessageTemplate(),
-				constraintViolation.getMessage());
 	}
 
 	public String getFieldCode() {
